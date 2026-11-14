@@ -70,7 +70,7 @@ pawanputrasolar/
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 Copy `.env.example` to `.env.local` for local development or configure in your deployment platform:
 
