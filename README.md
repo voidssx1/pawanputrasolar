@@ -239,6 +239,6 @@ python verify_live.py
 
 ---
 
-## 📄 License
+## License
 
 Proprietary — All rights reserved by **Pawanputra Solar Solutions Pvt. Ltd.**
