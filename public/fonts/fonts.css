@@ -1,0 +1,5 @@
+@font-face{font-family:'Poppins';src:url('/fonts/poppins-400-latin.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:'Poppins';src:url('/fonts/poppins-500-latin.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:'Poppins';src:url('/fonts/poppins-600-latin.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:'Poppins';src:url('/fonts/poppins-700-latin.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:'DM Sans';src:url('/fonts/dmsans-latin.woff2') format('woff2');font-weight:400 700;font-style:normal;font-display:swap;}
