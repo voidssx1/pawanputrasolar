@@ -74,8 +74,10 @@ export default function LeadForm({
           bill,
           city: data.get("city"),
           segment: data.get("segment"),
-          message: data.get("message"),
-          company: data.get("company"),
+          // FormData.get() returns null when the optional textarea is absent
+          // (for example, in compact forms). The API expects a string.
+          message: String(data.get("message") || ""),
+          company: String(data.get("company") || ""),
         }),
       });
 
