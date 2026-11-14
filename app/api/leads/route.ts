@@ -110,13 +110,16 @@ export async function POST(request: Request) {
   }
 
   let delivered = false;
-  if (process.env.LEADS_WEBHOOK_URL) {
+  const webhookUrl = process.env.LEADS_WEBHOOK_URL;
+  const webhookSecret = process.env.LEADS_WEBHOOK_SECRET;
+
+  if (webhookUrl && webhookSecret) {
     try {
-      const response = await fetch(process.env.LEADS_WEBHOOK_URL, {
+      const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(lead),
-        signal: AbortSignal.timeout(6000),
+        body: JSON.stringify({ ...lead, secret: webhookSecret }),
+        signal: AbortSignal.timeout(10000),
       });
       delivered = response.ok;
       if (!response.ok) {
@@ -125,11 +128,19 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error("Lead webhook failed", error);
     }
+  } else {
+    console.error(
+      "Lead webhook is not configured: LEADS_WEBHOOK_URL and LEADS_WEBHOOK_SECRET are required on serverless hosting.",
+    );
   }
 
   if (!storedLocally && !delivered) {
     return NextResponse.json(
-      { ok: false, error: "We could not save your request. Please call us." },
+      {
+        ok: false,
+        error: "Lead delivery failed. Please try again or call us.",
+        details: "Check LEADS_WEBHOOK_URL, LEADS_WEBHOOK_SECRET, and the Vercel function logs.",
+      },
       { status: 500 },
     );
   }
