@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { z } from "zod";
 import { estimate } from "@/lib/calculator";
 
@@ -88,6 +86,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, kw: 3 });
   }
 
+  const webhookUrl = process.env.LEADS_WEBHOOK_URL;
+  const webhookSecret = process.env.LEADS_WEBHOOK_SECRET;
+
+  if (!webhookUrl || !webhookSecret) {
+    console.error("Lead webhook is not configured: LEADS_WEBHOOK_URL and LEADS_WEBHOOK_SECRET are required.");
+    return NextResponse.json(
+      { ok: false, error: "Lead delivery is temporarily unavailable. Please call us instead." },
+      { status: 503 },
+    );
+  }
+
   const lead = {
     ...parsed.data,
     source: "website",
@@ -95,53 +104,37 @@ export async function POST(request: Request) {
     receivedAt: new Date().toISOString(),
   };
 
-  let storedLocally = false;
   try {
-    const dir = path.join(process.cwd(), ".data");
-    await fs.mkdir(dir, { recursive: true });
-    await fs.appendFile(
-      path.join(dir, "leads.jsonl"),
-      `${JSON.stringify(lead)}\n`,
-      "utf8",
-    );
-    storedLocally = true;
-  } catch (error) {
-    console.error("Lead persistence failed", error);
-  }
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...lead, secret: webhookSecret }),
+      signal: AbortSignal.timeout(10000),
+    });
 
-  let delivered = false;
-  const webhookUrl = process.env.LEADS_WEBHOOK_URL;
-  const webhookSecret = process.env.LEADS_WEBHOOK_SECRET;
-
-  if (webhookUrl && webhookSecret) {
+    const responseText = await response.text();
+    let webhookResult: { ok?: boolean; error?: string } = {};
     try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...lead, secret: webhookSecret }),
-        signal: AbortSignal.timeout(10000),
-      });
-      delivered = response.ok;
-      if (!response.ok) {
-        console.error("Lead webhook rejected the lead", response.status);
-      }
-    } catch (error) {
-      console.error("Lead webhook failed", error);
+      webhookResult = JSON.parse(responseText);
+    } catch {
+      console.error("Lead webhook returned a non-JSON response", response.status);
     }
-  } else {
-    console.error(
-      "Lead webhook is not configured: LEADS_WEBHOOK_URL and LEADS_WEBHOOK_SECRET are required on serverless hosting.",
-    );
-  }
 
-  if (!storedLocally && !delivered) {
+    if (!response.ok || webhookResult.ok !== true) {
+      console.error("Lead webhook rejected the lead", {
+        status: response.status,
+        error: webhookResult.error || "Webhook did not confirm success",
+      });
+      return NextResponse.json(
+        { ok: false, error: "Lead delivery failed. Please try again or call us." },
+        { status: 502 },
+      );
+    }
+  } catch (error) {
+    console.error("Lead webhook failed", error);
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Lead delivery failed. Please try again or call us.",
-        details: "Check LEADS_WEBHOOK_URL, LEADS_WEBHOOK_SECRET, and the Vercel function logs.",
-      },
-      { status: 500 },
+      { ok: false, error: "Lead delivery failed. Please try again or call us." },
+      { status: 502 },
     );
   }
 
