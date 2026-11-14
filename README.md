@@ -4,7 +4,7 @@ Modern, high-performance web platform and lead engine for **Pawanputra Solar Sol
 
 ---
 
-## ⚡ Tech Stack & Architecture
+## Tech Stack & Architecture
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server & Client Components)
 - **UI / Runtime**: React 19, TypeScript
@@ -19,7 +19,7 @@ Modern, high-performance web platform and lead engine for **Pawanputra Solar Sol
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 pawanputrasolar/
@@ -85,7 +85,7 @@ cp .env.example .env.local
 
 ---
 
-## 🚀 Local Development
+## Local Development
 
 ### 1. Prerequisites
 - Node.js 20.x or higher
@@ -110,7 +110,7 @@ npm run start
 
 ---
 
-## 🌐 Production Hosting Guide
+## Production Hosting Guide
 
 ### Option 1: VPS / Linux Server (PM2 + Nginx + Let's Encrypt) — *Recommended for Persistent Local Leads*
 
@@ -221,7 +221,7 @@ docker run -d -p 3000:3000 \
 
 ---
 
-## 🧪 Verification & Testing
+## Verification & Testing
 
 The repository includes a comprehensive Playwright audit script (`verify_live.py`) checking:
 - Desktop & mobile rendering across 24+ routes
